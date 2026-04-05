@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TECH SSTA | Diagnóstico 21 Estándares</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { 
+            --cobalto: #0047AB; 
+            --bg: #F8FAFC; 
+            --card: #FFFFFF;
+            --text: #1E293B;
+            --success: #10B981;
+            --danger: #9F1239;
+        }
+        
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background: var(--bg); color: var(--text); 
+            margin: 0; padding: 20px; 
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        .container { width: 100%; max-width: 700px; }
+
+        .sticky-header { position: sticky; top: 0; background: var(--bg); padding: 10px 0 20px 0; z-index: 100; width: 100%; }
+
+        .progress-card { 
+            background: var(--card); padding: 20px; border-radius: 20px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08); border-bottom: 4px solid var(--cobalto);
+        }
+
+        .bar-bg { width: 100%; height: 14px; background: #E2E8F0; border-radius: 10px; overflow: hidden; }
+        .bar-fill { height: 100%; background: var(--cobalto); width: 0%; transition: 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        .input-group { background: var(--card); padding: 20px; border-radius: 15px; margin: 20px 0; border: 1px solid #E2E8F0; }
+        label { font-weight: 700; font-size: 0.8rem; color: var(--cobalto); text-transform: uppercase; }
+        input { width: 100%; padding: 12px; margin-top: 8px; border: 2px solid #F1F5F9; border-radius: 10px; box-sizing: border-box; font-family: inherit;}
+
+        .items-container { display: grid; gap: 15px; margin-bottom: 40px; }
+        
+        /* Estilo del Ítem con Acordeón */
+        .check-card { 
+            background: var(--card); border-radius: 15px; 
+            border: 1px solid #E2E8F0; transition: 0.3s;
+            overflow: hidden;
+        }
+        .item-main {
+            padding: 18px; display: flex; align-items: center; gap: 15px; cursor: pointer;
+        }
+        .check-card:hover { border-color: var(--cobalto); }
+        .check-card input { width: 24px; height: 24px; accent-color: var(--cobalto); flex-shrink: 0; }
+        
+        .verificacion-btn {
+            font-size: 0.7rem; font-weight: 800; color: var(--cobalto);
+            background: #E0EBFF; padding: 4px 10px; border-radius: 6px;
+            margin-top: 5px; display: inline-block;
+        }
+
+        /* Contenido del Modo de Verificación */
+        details summary { list-style: none; outline: none; }
+        details summary::-webkit-details-marker { display: none; }
+        .modo-verificacion {
+            background: #F1F5F9; padding: 15px; font-size: 0.85rem;
+            border-top: 1px dashed #CBD5E1; line-height: 1.4; color: #475569;
+        }
+
+        .footer-action { display: none; background: var(--card); padding: 30px; border-radius: 25px; box-shadow: 0 -10px 40px rgba(0,0,0,0.1); margin-top: 30px; border: 1px solid #E2E8F0; }
+        .btn-main { color: white; border: none; padding: 16px; border-radius: 12px; font-weight: 800; cursor: pointer; width: 100%; font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="sticky-header">
+        <div class="progress-card">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                <span style="font-weight: 800;">TECH SSTA | Diagnóstico</span>
+                <span id="percent" style="font-weight: 800; color: var(--cobalto);">0%</span>
+            </div>
+            <div class="bar-bg"><div id="fill" class="bar-fill"></div></div>
+        </div>
+    </div>
+
+    <div class="input-group">
+        <label>Organización / Empresa</label>
+        <input type="text" id="company" placeholder="Nombre de la empresa" oninput="unlock()">
+        <div style="margin-top: 15px;">
+            <label>NIT / Identificación</label>
+            <input type="text" id="nit" placeholder="Ej: 900.123.456-1">
+        </div>
+    </div>
+
+    <div id="items-list" class="items-container" style="opacity: 0.3; pointer-events: none;"></div>
+
+    <div class="footer-action" id="actionPanel">
+        <div id="status-message" style="margin-bottom: 20px; text-align: center;"></div>
+        <div id="alert-box" style="padding: 25px; border-radius: 15px; margin-bottom: 25px; text-align: center;">
+            <span id="alert-label" style="font-weight: 800; font-size: 0.85rem;"></span>
+            <div id="multaEstimada" style="font-size: 2.2rem; font-weight: 800; margin-top: 10px;"></div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1.3fr; gap: 15px;">
+            <button class="btn-main" onclick="generateReport()" style="background: #1E293B;">⬇️ REPORTE PDF</button>
+            <button class="btn-main" onclick="hablarExperto()" style="background: var(--success);">💬 HABLAR CON ASESOR</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const standards = [
+        ["Responsable del SG-SST", "Solicitar documento soporte de la asignación y constatar la hoja de vida con soportes, de la persona asignada."],
+        ["Recursos Financieros", "Solicitar documento soporte de asignación de recursos."],
+        ["Seguridad Social", "Solicitar documento soporte de afiliación y del pago correspondiente."],
+        ["COPASST / Vigía", "Solicitar actas de conformación, actas de reuniones e informes."],
+        ["Comité de Convivencia", "Solicitar actas de reuniones e informes del Comité de Convivencia Laboral."],
+        ["Plan de Capacitación", "Solicitar el programa de capacitación y los soportes de la ejecución del mismo / planillas donde se evidencie la firma de los trabajadores participantes."],
+        ["Política de SST", "Solicitar la política escrita y soportes de su divulgación."],
+        ["Plan Anual de Trabajo", "Solicitar documento que contenga plan anual de trabajo."],
+        ["Archivo Documental", "Revisar el archivo con los documentos soporte de acuerdo con la normatividad vigente."],
+        ["Perfil Sociodemográfico", "Solicitar documento que contenga el perfil sociodemográfico y el diagnóstico de condiciones de salud."],
+        ["Actividades Medicina/P&P", "Solicitar evidencias de ejecución de actividades de medicina del trabajo, promoción y prevención según el diagnóstico de salud."],
+        ["Evaluaciones Médicas", "Conceptos emitidos por el médico evaluador con recomendaciones y restricciones laborales."],
+        ["Recomendaciones/Juntas", "Solicitar recomendaciones de EPS/ARL, soporte de actuación de la empresa y documentos para procesos de calificación."],
+        ["Reporte AT / EL", "Muestreo de FURAT/FUREL y verificar reporte a ARL/EPS/Dirección Territorial en los 2 días hábiles siguientes."],
+        ["Investigación AT / EL", "Verificar por muestreo si se investigan incidentes, AT y EL con participación del COPASST."],
+        ["Matriz de Peligros", "Solicitar identificación de peligros, valoración de riesgos y evidencias de medidas de control implementadas."],
+        ["Mantenimiento Equipos", "Solicitar soportes de mantenimiento de instalaciones, equipos, máquinas y herramientas."],
+        ["Entrega de EPP", "Solicitar evidencia de entrega de elementos de protección personal y capacitaciones en su uso."],
+        ["Plan de Emergencias", "Solicitar el plan de prevención ante emergencias y constatar evidencias de su divulgación."],
+        ["Brigada de Emergencia", "Solicitar conformación de brigada, soportes de capacitación y entrega de dotación."],
+        ["Revisión por Dirección", "Solicitar soportes de la revisión por la alta dirección de los resultados del SG-SST."]
+    ];
+
+    const list = document.getElementById('items-list');
+    standards.forEach((s, i) => {
+        list.innerHTML += `
+            <div class="check-card">
+                <div class="item-main">
+                    <input type="checkbox" id="c-${i}" onchange="update()">
+                    <div style="flex-grow: 1;" onclick="document.getElementById('c-${i}').checked = !document.getElementById('c-${i}').checked; update();">
+                        <b style="font-size: 0.95rem; display: block;">${i+1}. ${s[0]}</b>
+                        <details onclick="event.stopPropagation();">
+                            <summary class="verificacion-btn">🔍 VER MODO DE VERIFICACIÓN</summary>
+                            <div class="modo-verificacion">${s[1]}</div>
+                        </details>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
+    function unlock() {
+        if(document.getElementById('company').value.length > 2) {
+            list.style.opacity = "1";
+            list.style.pointerEvents = "auto";
+        }
+    }
+
+    function update() {
+        const checks = document.querySelectorAll('input:checked').length;
+        const p = Math.round((checks / 21) * 100);
+        document.getElementById('actionPanel').style.display = checks > 0 ? 'block' : 'none';
+        document.getElementById('fill').style.width = p + '%';
+        document.getElementById('percent').innerText = p + '%';
+
+        const statusMsg = document.getElementById('status-message');
+        const alertBox = document.getElementById('alert-box');
+        const alertLabel = document.getElementById('alert-label');
+        const multaDiv = document.getElementById('multaEstimada');
+
+        if (p === 100) {
+            statusMsg.innerHTML = `<h3 style="color: var(--success);">✅ ¡Excelente Gestión!</h3><p style="font-size: 0.85rem;">Eres un empleador responsable. Tu sistema está blindado.</p>`;
+            alertBox.style.background = "#ECFDF5"; alertBox.style.border = "1px solid #A7F3D0";
+            alertLabel.innerText = "SISTEMA PROTEGIDO"; alertLabel.style.color = "#065F46";
+            multaDiv.innerText = "CUMPLIMIENTO TOTAL"; multaDiv.style.color = "#065F46";
+        } else {
+            statusMsg.innerHTML = `<h3 style="color: #1E293B;">⚠️ Alerta de Cumplimiento</h3><p style="font-size: 0.85rem; color: #64748B;">Blindaje insuficiente. Tienes brechas técnicas críticas.</p>`;
+            alertBox.style.background = "#FFF1F2"; alertBox.style.border = "1px solid #FECDD3";
+            alertLabel.innerText = "RIESGO ECONÓMICO ESTIMADO"; alertLabel.style.color = "var(--danger)";
+            const multa = (21 - checks) * 3200000;
+            multaDiv.innerText = new Intl.NumberFormat('es-CO', {style:'currency', currency:'COP', maximumFractionDigits:0}).format(multa);
+            multaDiv.style.color = "var(--danger)";
+        }
+    }
+
+    function hablarExperto() {
+        const emp = document.getElementById('company').value;
+        const msg = `Hola Daniel, completé el diagnóstico TECH SSTA para ${emp}. Mi puntaje fue ${document.getElementById('percent').innerText}. Requiero apoyo profesional.`;
+        window.open(`https://wa.me/573015365704?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+
+    async function generateReport() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const co = document.getElementById('company').value.toUpperCase() || "EMPRESA";
+        const nit = document.getElementById('nit').value || "S/N";
+        const checks = document.querySelectorAll('input:checked').length;
+        const p = Math.round((checks / 21) * 100);
+
+        doc.setFillColor(0, 71, 171); doc.rect(0, 0, 210, 40, 'F');
+        doc.setTextColor(255, 255, 255); doc.setFontSize(20); doc.setFont(undefined, 'bold');
+        doc.text("TECH SSTA - REPORTE TÉCNICO", 105, 20, { align: 'center' });
+        doc.setFontSize(10); doc.setFont(undefined, 'normal');
+        doc.text(`EMPRESA: ${co} | NIT: ${nit}`, 105, 30, { align: 'center' });
+
+        doc.setFillColor(230, 230, 230); doc.roundedRect(20, 50, 170, 10, 3, 3, 'F');
+        doc.setFillColor(0, 71, 171); doc.roundedRect(20, 50, (170 * p) / 100, 10, 3, 3, 'F');
+        doc.setTextColor(0, 71, 171); doc.setFontSize(12); doc.setFont(undefined, 'bold');
+        doc.text(`PUNTAJE DE CUMPLIMIENTO: ${p}%`, 105, 68, { align: 'center' });
+
+        const tableData = standards.map((s, i) => [i+1, s[0], document.getElementById(`c-${i}`).checked ? 'CUMPLE' : 'NO CUMPLE']);
+        doc.autoTable({
+            startY: 75, head: [['#', 'Requisito SST', 'Estado']], body: tableData,
+            headStyles: { fillColor: [0, 71, 171] },
+            didParseCell: (data) => { if (data.column.index === 2) data.cell.styles.textColor = data.cell.raw === 'CUMPLE' ? [21, 128, 61] : [185, 28, 28]; }
+        });
+
+        const finalY = doc.lastAutoTable.finalY + 15;
+        if (p < 70) {
+            doc.setFillColor(255, 241, 242); doc.rect(14, finalY, 182, 30, 'F');
+            doc.setTextColor(159, 18, 57); doc.setFontSize(10); doc.setFont(undefined, 'bold');
+            doc.text("¡ALERTA DE SEGURIDAD!", 20, finalY + 8); doc.setFont(undefined, 'normal');
+            doc.text("Su puntaje es menor al 70%. Para evitar accidentes y multas para su empresa,", 20, finalY + 14);
+            doc.text("puede contactar a las siguientes terminales: Whatsapp: 3015365704 | Correo: danielsst2912@gmail.com", 20, finalY + 19);
+            doc.text("¡Evita accidentes y multas para tu empresa!", 20, finalY + 24);
+        } else {
+            doc.setFillColor(236, 253, 245); doc.rect(14, finalY, 182, 25, 'F');
+            doc.setTextColor(6, 95, 70); doc.setFontSize(10); doc.setFont(undefined, 'bold');
+            doc.text("EMPLEADOR RESPONSABLE", 20, finalY + 8); doc.setFont(undefined, 'normal');
+            doc.text("Continúa así con tu sistema de gestión de seguridad y salud en el trabajo,", 20, finalY + 14);
+            doc.text("si tienes algún inconveniente estamos para apoyarte.", 20, finalY + 19);
+        }
+        doc.save(`TECH_SSTA_${co}.pdf`);
+    }
+</script>
+</body>
+</html>
